@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Raport dzienny</title>
+
+<style>
+body{
+  margin:0;
+  padding:16px;
+  background:#0f1724;
+  color:#e6eef8;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto;
+}
+
+.container{
+  max-width:800px;
+  margin:auto;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+h1{
+  margin:0;
+  font-size:22px;
+}
+
+.dateBox{
+  font-size:16px;
+  background:#08101c;
+  padding:8px 14px;
+  border-radius:10px;
+}
+
+h2{
+  margin-top:30px;
+  font-size:18px;
+}
+
+.card{
+  background:rgba(255,255,255,0.05);
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:20px;
+}
+
+label{
+  display:block;
+  margin-top:14px;
+  margin-bottom:6px;
+  font-size:14px;
+}
+
+input, select, textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:#0b1220;
+  color:#e6eef8;
+  box-sizing:border-box;
+  font-size:16px;
+}
+
+select option{
+  background:#0b1220;
+  color:#e6eef8;
+}
+
+textarea{
+  resize:none;
+}
+
+button{
+  margin-top:20px;
+  padding:14px;
+  width:100%;
+  border:none;
+  border-radius:12px;
+  background:#06b6d4;
+  color:#04202a;
+  font-weight:700;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.resultBox{
+  margin-top:10px;
+  padding:12px;
+  background:#08101c;
+  border-radius:10px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#02131f;
+  padding:12px 18px;
+  border-radius:10px;
+  display:none;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>Raport dzienny</h1>
+  <div class="dateBox" id="currentDate"></div>
+</div>
+
+<div class="card">
+<form id="dailyForm">
+
+<!-- Imię -->
+<label for="nameSelect">Imię</label>
+<select id="nameSelect" required>
+<option value="">— wybierz imię —</option>
+<option>Olga</option>
+<option>Estera</option>
+<option>Weronika</option>
+<option>Renata</option>
+<option>Małgorzata</option>
+<option>Damaris</option>
+<option>Anna</option>
+<option value="other">Inne...</option>
+</select>
+<input id="customName" type="text" placeholder="Wpisz imię" style="display:none; margin-top:8px;">
+
+<!-- Sklep -->
+<label for="shop">Sklep</label>
+<select id="shop" required>
+<option value="">— wybierz sklep —</option>
+<option>Karmelicka</option>
+<option>Plac</option>
+<option>Starowiślna</option>
+</select>
+
+<!-- Utarg -->
+<label for="cash">Utarg – gotówka (PLN)</label>
+<input id="cash" type="number" step="0.01" min="0">
+
+<label for="card">Utarg – karta (PLN)</label>
+<input id="card" type="number" step="0.01" min="0">
+
+<h2>Raport kasowy</h2>
+
+<!-- Raport kasowy -->
+<label for="raportKasowy">Raport Kasowy</label>
+<input id="raportKasowy" type="number" step="0.01" placeholder="Wpisz kwotę">
+
+<!-- Zakupy i wpłaty -->
+<label>Zakupy i wpłaty</label>
+<select id="zakupyTyp">
+  <option value="pracownicze">Pracownicze</option>
+  <option value="szef">Szef</option>
+</select>
+<input id="zakupyKwota" type="number" step="0.01" placeholder="Kwota">
+
+<!-- Rozchody i wydatki -->
+<label>Rozchody i wydatki</label>
+<select id="wydatkiTyp">
+  <option value="marcin">Marcin</option>
+  <option value="czynsz">Czynsz</option>
+  <option value="inne">Inne</option>
+</select>
+<input id="wydatkiKwota" type="number" step="0.01" placeholder="Kwota">
+
+<!-- Gotówka w kasetce -->
+<label for="kasetka">Gotówka w kasetce</label>
+<input id="kasetka" type="number" step="0.01" placeholder="Kwota">
+
+<!-- Saldo końcowe -->
+<div class="resultBox">
+Saldo końcowe: <span id="saldoKoncowe">0.00</span> PLN
+</div>
+
+<!-- Uwagi -->
+<label for="notes">Uwagi</label>
+<textarea id="notes" rows="2"></textarea>
+
+<button type="submit">Zapisz raport</button>
+
+</form>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const FORM_ENDPOINT = "TU_WKLEJ_SWÓJ_LINK_APPS_SCRIPT";
+
+const form = document.getElementById("dailyForm");
+const toast = document.getElementById("toast");
+const nameSelect = document.getElementById("nameSelect");
+const customName = document.getElementById("customName");
+
+const cash = document.getElementById("cash");
+const card = document.getElementById("card");
+
+const raportKasowy = document.getElementById("raportKasowy");
+
+const zakupyTyp = document.getElementById("zakupyTyp");
+const zakupyKwota = document.getElementById("zakupyKwota");
+
+const wydatkiTyp = document.getElementById("wydatkiTyp");
+const wydatkiKwota = document.getElementById("wydatkiKwota");
+
+const kasetka = document.getElementById("kasetka");
+
+const saldoKoncowe = document.getElementById("saldoKoncowe");
+const notes = document.getElementById("notes");
+
+const currentDate = document.getElementById("currentDate");
+
+function ustawDate(){
+  const today = new Date();
+  currentDate.textContent = today.toLocaleDateString("pl-PL");
+}
+ustawDate();
+
+nameSelect.addEventListener("change", () => {
+  if(nameSelect.value === "other"){
+    customName.style.display = "block";
+    customName.required = true;
+  } else {
+    customName.style.display = "none";
+    customName.required = false;
+  }
+});
+
+// Saldo końcowe = narastająco Utarg gotówka – Rozchody/Wydatki
+function przeliczSaldo(){
+  const utarg = parseFloat(cash.value) || 0;
+  const wydatki = parseFloat(wydatkiKwota.value) || 0;
+
+  const saldo = utarg - wydatki;
+  saldoKoncowe.textContent = saldo.toFixed(2);
+}
+
+// Nasłuchiwacze zmian do Salda Końcowego
+[cash, wydatkiKwota].forEach(el => {
+  el.addEventListener("input", przeliczSaldo);
+});
+
+function showToast(msg){
+  toast.innerText = msg;
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 2500);
+}
+
+form.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  let name = nameSelect.value;
+  if(name === "other"){
+    name = customName.value.trim();
+  }
+
+  const data = {
+    date: currentDate.textContent,
+    name: name,
+    shop: document.getElementById("shop").value,
+    cash: cash.value || 0,
+    card: card.value || 0,
+    raportKasowy: raportKasowy.value || 0,
+    zakupyTyp: zakupyTyp.value,
+    zakupyKwota: zakupyKwota.value || 0,
+    wydatkiTyp: wydatkiTyp.value,
+    wydatkiKwota: wydatkiKwota.value || 0,
+    kasetka: kasetka.value || 0,
+    saldoKoncowe: saldoKoncowe.textContent,
+    notes: notes.value || ""
+  };
+
+  try{
+    showToast("Wysyłanie...");
+    const res = await fetch(FORM_ENDPOINT,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.result === "success"){
+      showToast("Zapisano ✓");
+      form.reset();
+      customName.style.display = "none";
+      saldoKoncowe.textContent = "0.00";
+    }else{
+      showToast("Błąd zapisu");
+    }
+  }catch(err){
+    console.error(err);
+    showToast("Błąd połączenia");
+  }
+});
+</script>
+
+</body>
+</html>
