@@ -52,51 +52,53 @@ button{
 
 <label>Imię</label>
 <select id="name">
-  <option>Olga</option>
-  <option>Estera</option>
-  <option>Weronika</option>
-  <option>Renata</option>
-  <option>Małgorzata</option>
-  <option>Damaris</option>
-  <option>Anna</option>
+  <option value="">— wybierz imię —</option>
+  <option value="Olga">Olga</option>
+  <option value="Estera">Estera</option>
+  <option value="Weronika">Weronika</option>
+  <option value="Renata">Renata</option>
+  <option value="Małgorzata">Małgorzata</option>
+  <option value="Damaris">Damaris</option>
+  <option value="Anna">Anna</option>
 </select>
 
 <label>Sklep</label>
 <select id="shop">
-  <option>Karmelicka</option>
-  <option>Plac</option>
-  <option>Starowiślna</option>
+  <option value="">— wybierz sklep —</option>
+  <option value="Karmelicka">Karmelicka</option>
+  <option value="Plac">Plac</option>
+  <option value="Starowiślna">Starowiślna</option>
 </select>
 
-<label>Utarg gotówka</label>
-<input id="cash" type="number">
+<label>Utarg – gotówka (PLN)</label>
+<input id="cash" type="number" step="0.01">
 
-<label>Utarg karta</label>
-<input id="card" type="number">
+<label>Utarg – karta (PLN)</label>
+<input id="card" type="number" step="0.01">
 
 <label>Raport kasowy</label>
-<input id="raportKasowy" type="number">
+<input id="raportKasowy" type="number" step="0.01">
 
 <label>Zakupy i wpłaty</label>
 <select id="zakupyTyp">
-  <option>Pracownicze</option>
-  <option>Szef</option>
+  <option value="Pracownicze">Pracownicze</option>
+  <option value="Szef">Szef</option>
 </select>
-<input id="zakupyKwota" type="number">
+<input id="zakupyKwota" type="number" step="0.01">
 
 <label>Rozchody i wydatki</label>
 <select id="wydatkiTyp">
-  <option>Marcin</option>
-  <option>Czynsz</option>
-  <option>Inne</option>
+  <option value="Marcin">Marcin</option>
+  <option value="Czynsz">Czynsz</option>
+  <option value="Inne">Inne</option>
 </select>
-<input id="wydatkiKwota" type="number">
+<input id="wydatkiKwota" type="number" step="0.01">
 
 <label>Gotówka w kasetce</label>
-<input id="kasetka" type="number">
+<input id="kasetka" type="number" step="0.01">
 
 <div class="resultBox">
-Saldo końcowe: <span id="saldo">0.00</span>
+Saldo końcowe: <span id="saldo">0.00</span> PLN
 </div>
 
 <label>Uwagi</label>
@@ -112,23 +114,35 @@ Saldo końcowe: <span id="saldo">0.00</span>
 <script>
 const FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbw8j0i02eAOnW17cMhHXduPCUS_bI8rBjR9rr3wEoaftwCyBqoU5nsxhch7r3EOwtAiWQ/exec";
 
+const nameField = document.getElementById("name");
+const shopField = document.getElementById("shop");
 const cash = document.getElementById("cash");
-const wyd = document.getElementById("wydatkiKwota");
+const card = document.getElementById("card");
+const raportKasowy = document.getElementById("raportKasowy");
+const zakupyTyp = document.getElementById("zakupyTyp");
+const zakupyKwota = document.getElementById("zakupyKwota");
+const wydatkiTyp = document.getElementById("wydatkiTyp");
+const wydatkiKwota = document.getElementById("wydatkiKwota");
+const kasetka = document.getElementById("kasetka");
+const notes = document.getElementById("notes");
 const saldo = document.getElementById("saldo");
 
 function liczSaldo(){
-  saldo.textContent = ((parseFloat(cash.value)||0) - (parseFloat(wyd.value)||0)).toFixed(2);
+  saldo.textContent = (
+    (parseFloat(cash.value) || 0) -
+    (parseFloat(wydatkiKwota.value) || 0)
+  ).toFixed(2);
 }
-cash.oninput = liczSaldo;
-wyd.oninput = liczSaldo;
+cash.addEventListener("input", liczSaldo);
+wydatkiKwota.addEventListener("input", liczSaldo);
 
-document.getElementById("dailyForm").addEventListener("submit", async e=>{
+document.getElementById("dailyForm").addEventListener("submit", async e => {
   e.preventDefault();
 
   const data = {
     date: new Date().toLocaleDateString("pl-PL"),
-    name: name.value,
-    shop: shop.value,
+    name: nameField.value,
+    shop: shopField.value,
     cash: cash.value,
     card: card.value,
     raportKasowy: raportKasowy.value,
@@ -141,16 +155,16 @@ document.getElementById("dailyForm").addEventListener("submit", async e=>{
     notes: notes.value
   };
 
-  await fetch(FORM_ENDPOINT,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{ "Content-Type":"application/json" },
+  await fetch(FORM_ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
 
   alert("Zapisano");
   e.target.reset();
-  saldo.textContent="0.00";
+  saldo.textContent = "0.00";
 });
 </script>
 
