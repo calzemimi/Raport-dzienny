@@ -140,7 +140,7 @@ document.getElementById("dailyForm").addEventListener("submit", async e => {
   e.preventDefault();
 
   const data = {
-    date: new Date().toLocaleDateString("pl-PL"),
+   date: new Date().toLocaleString("pl-PL"),
     name: nameField.value,
     shop: shopField.value,
     cash: cash.value,
@@ -170,5 +170,6 @@ document.getElementById("dailyForm").addEventListener("submit", async e => {
 
 </body>
 </html>
+
 
 
